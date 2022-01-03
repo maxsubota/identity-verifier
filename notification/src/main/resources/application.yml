@@ -1,0 +1,40 @@
+
+
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+  main:
+    web-application-type: none
+  mail:
+    port: 1025
+    host: localhost
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notification
+    username: postgres
+    password: 123
+
+notification:
+  retry:
+    attempts: 10
+  mobile:
+    title: Verification code
+  email:
+    from: no-reply@examle.com
+  queues:
+    verification: event.domain.verification
+  gotify:
+    application:
+      username: admin
+      password: admin
+      name: testApplication
+      description: test
+    url: http://localhost:8000
+  template:
+    url: http://localhost:8081

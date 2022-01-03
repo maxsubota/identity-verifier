@@ -1,0 +1,8 @@
+rootProject.name = 'verifier'
+include 'template'
+include 'verification'
+include 'notification'
+include 'core'
+include 'outbox-event-starter'
+include 'api-gateway'
+

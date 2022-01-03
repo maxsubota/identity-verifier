@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=subota.max.outbox.OutboxEventAutoConfiguration

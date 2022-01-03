@@ -1,0 +1,23 @@
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/verification
+    username: postgres
+    password: 123
+
+verification:
+  settings:
+    codeLength: 8
+    ttlInSeconds: 300
+    attemptsLimit: 5
+  queues:
+    verification: event.domain.verification

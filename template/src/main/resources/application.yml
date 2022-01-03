@@ -1,0 +1,8 @@
+
+spring:
+  thymeleaf:
+    suffix: ""
+    servlet:
+      content-type: "*/*"
+server:
+  port: 8081

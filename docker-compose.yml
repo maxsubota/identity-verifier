@@ -1,0 +1,92 @@
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: 123
+    volumes:
+      - ./create_db.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+
+  gotify:
+    image: gotify/server
+    container_name: gotify
+    volumes:
+      - /var/gotify/data:/app/data
+    ports:
+      - 8000:80
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025
+
+  template:
+    image: template
+    container_name: template
+    restart: always
+#    ports:
+#      - 8081:8081
+    healthcheck:
+      test: curl -m 5 --silent --fail --request GET http://localhost:8080/actuator/health | jq --exit-status -n 'inputs | if has("status") then .status=="UP" else false end' > /dev/null || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  notification:
+    image: notification
+    container_name: notification
+    environment:
+      - spring.datasource.url=jdbc:postgresql://postgres:5432/notification
+      - spring.rabbitmq.host=rabbitmq
+      - spring.mail.host=mailhog
+      - notification.gotify.url=http://gotify:80
+      - notification.template.url=http://template:8081
+    restart: always
+    healthcheck:
+      test: curl -m 5 --silent --fail --request GET http://localhost:8080/actuator/health | jq --exit-status -n 'inputs | if has("status") then .status=="UP" else false end' > /dev/null || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      - template
+      - postgres
+      - rabbitmq
+      - gotify
+      - mailhog
+
+  verification:
+    image: verification
+    container_name: verification
+    ports:
+      - 8080:8080
+    environment:
+      - spring.datasource.url=jdbc:postgresql://postgres:5432/verification
+      - spring.rabbitmq.host=rabbitmq
+    restart: always
+    healthcheck:
+      test: curl -m 5 --silent --fail --request GET http://localhost:8080/actuator/health | jq --exit-status -n 'inputs | if has("status") then .status=="UP" else false end' > /dev/null || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      - rabbitmq
+      - postgres
